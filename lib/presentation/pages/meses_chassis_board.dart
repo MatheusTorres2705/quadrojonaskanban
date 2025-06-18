@@ -283,7 +283,7 @@ class MesesChassisBoard extends StatelessWidget {
                                               .toList(),
                                         );
                                         return Container(
-                                          width: 280,
+                                          width: 400,
                                           margin: const EdgeInsets.all(8),
                                           padding: const EdgeInsets.all(8),
                                           decoration: BoxDecoration(
@@ -298,7 +298,7 @@ class MesesChassisBoard extends StatelessWidget {
                                             children: [
                                               Padding(
                                                 padding: const EdgeInsets.only(
-                                                  bottom: 8,
+                                                  bottom: 10,
                                                 ),
                                                 child: Text(
                                                   linhaEntry.key,
@@ -309,7 +309,7 @@ class MesesChassisBoard extends StatelessWidget {
                                                 ),
                                               ),
                                               SizedBox(
-                                                height: 240,
+                                                height: 340,
                                                 child: SingleChildScrollView(
                                                   child: Column(
                                                     children: lista.map((

@@ -4,6 +4,7 @@ class ChassiItemModel {
   String status;
   String ano;
   String mes;
+  int sequencia;
 
   ChassiItemModel({
     required this.chassi,
@@ -11,6 +12,7 @@ class ChassiItemModel {
     required this.status,
     required this.ano,
     required this.mes,
+    required this.sequencia,
   });
 
   factory ChassiItemModel.fromJson(Map<String, dynamic> json) {
@@ -20,6 +22,7 @@ class ChassiItemModel {
       status: json['status'] ?? '',
       ano: json['ano'] ?? '',
       mes: json['mes'] ?? '',
+      sequencia: json['sequencia'] ?? '',
     );
   }
 
@@ -30,6 +33,7 @@ class ChassiItemModel {
       'status': status,
       'ano': ano,
       'mes': mes,
+      'sequencia': sequencia,
     };
   }
 }

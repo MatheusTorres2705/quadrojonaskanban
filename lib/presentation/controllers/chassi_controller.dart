@@ -1,6 +1,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:quadrojonaskanban/models/parcelasFinanceira.dart';
 import '/../data/models/chassi_item_model.dart';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
@@ -109,6 +110,8 @@ class ChassiController extends GetxController {
   List<ChassiItemModel> ordenar(List<ChassiItemModel> lista) {
     if (ordenarPorChassi.value) {
       lista.sort((a, b) => a.chassi.compareTo(b.chassi));
+    } else {
+      lista.sort((a, b) => a.sequencia.compareTo(b.sequencia));
     }
     return lista;
   }
@@ -119,6 +122,7 @@ class ChassiController extends GetxController {
       final response = await http.get(
         Uri.parse('http://localhost:3000/api/chassi'),
       );
+
       if (response.statusCode == 200) {
         final json = jsonDecode(response.body);
         final rawMap = json['dadosPorMes'] as Map<String, dynamic>;
@@ -129,10 +133,16 @@ class ChassiController extends GetxController {
           final linhas = rawMap[mes] as Map<String, dynamic>;
           parsedMap[mes] = {};
 
-          for (var grupo in linhas.keys) {
+          // Ordena os grupos por nome (alfabético)
+          final gruposOrdenados = linhas.keys.toList()..sort();
+
+          for (var grupo in gruposOrdenados) {
             final listaChassis = (linhas[grupo] as List).map((item) {
               return ChassiItemModel.fromJson(item);
             }).toList();
+
+            // Ordena os chassis por número do chassi
+            listaChassis.sort((a, b) => a.chassi.compareTo(b.chassi));
 
             parsedMap[mes]![grupo] = listaChassis;
           }
@@ -244,6 +254,45 @@ class ChassiController extends GetxController {
         colorText: Colors.white,
         snackPosition: SnackPosition.BOTTOM,
       );
+    }
+  }
+
+  Future<List<ResumoFinanceiroModel>> buscarParcelasFinanceirasPorChassi(
+    String chassi,
+  ) async {
+    final url = Uri.parse(
+      "http://localhost:3000/api/chassifinanceiro?nunota=$chassi",
+    );
+
+    try {
+      final response = await http.get(url);
+
+      print("🔎 Chamando URL: $url");
+      print("📦 Status: ${response.statusCode}");
+      print("📦 Body: ${response.body}");
+
+      if (response.statusCode == 200) {
+        if (response.body.trim().isEmpty ||
+            response.body == '{}' ||
+            response.body == 'null') {
+          return [];
+        }
+
+        final json = jsonDecode(response.body);
+
+        // Proteção contra estrutura incompleta
+        if (json['chassi'] == null || json['vlrparcela'] == null) {
+          return [];
+        }
+
+        final model = ResumoFinanceiroModel.fromJson(json);
+        return [model];
+      }
+
+      throw Exception('Erro HTTP: ${response.statusCode}');
+    } catch (e) {
+      print('❌ Erro ao buscar parcelas do chassi $chassi: $e');
+      throw Exception('Erro ao carregar parcelas: $e');
     }
   }
 }

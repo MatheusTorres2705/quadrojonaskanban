@@ -21,6 +21,7 @@ class ChassiService {
           status: item['STATUS'].toString(),
           mes: item['MES'].toString(),
           ano: item['ANO'].toString(),
+          sequencia: item['SEQUENCIA'],
         );
       }).toList();
     } else {
