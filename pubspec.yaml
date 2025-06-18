@@ -38,6 +38,11 @@ dependencies:
   drag_and_drop_lists: ^0.4.2
   http: ^0.13.6
   get: ^4.7.2
+  path_provider: ^2.1.5
+  share_plus: ^11.0.0
+  pie_chart: ^5.4.0
+  fl_chart: ^1.0.0
+  percent_indicator: ^4.2.5
 
 dev_dependencies:
   flutter_test:

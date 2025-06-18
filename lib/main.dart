@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:quadrojonaskanban/presentation/controllers/chassi_controller.dart';
 import 'core/theme.dart';
 import 'presentation/pages/meses_chassis_board.dart';
 
 void main() {
+  Get.put(ChassiController());
   runApp(const ChassiPlannerApp());
 }
 

@@ -1,8 +1,12 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '/../data/models/chassi_item_model.dart';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
+import 'dart:io';
+import 'package:path_provider/path_provider.dart';
+import 'package:share_plus/share_plus.dart';
 
 class ChassiController extends GetxController {
   final isLoading = false.obs;
@@ -12,6 +16,21 @@ class ChassiController extends GetxController {
   final ordenarPorChassi = false.obs;
   final anoSelecionado = ''.obs;
   final mesesSelecionados = <String>[].obs;
+  final statusSelecionado = ''.obs;
+
+  final List<String> statusDisponiveis = [
+    'Em produção',
+    'Finalizado',
+    'Entregue',
+    'Cancelado',
+  ];
+
+  Future<void> carregarStatusDisponiveis() async {
+    //TODO Exemplo de carregamento dinâmico
+    statusDisponiveis.clear();
+    //  final response = await suaAPI(); // precisa implementar
+    //statusDisponiveis.addAll(response);
+  }
 
   ChassiItemModel? draggingChassi;
   String? draggingLinha;
@@ -46,14 +65,45 @@ class ChassiController extends GetxController {
     return meses.indexOf(mes);
   }
 
-  bool deveExibir(ChassiItemModel item) {
-    final clienteMatch =
-        filtroCliente.value.isEmpty ||
-        item.cliente.toLowerCase().contains(filtroCliente.value.toLowerCase());
-    final statusMatch =
-        filtroStatus.value.isEmpty ||
-        item.status.toLowerCase() == filtroStatus.value.toLowerCase();
-    return clienteMatch && statusMatch;
+  bool deveExibir(ChassiItemModel chassi) {
+    final clienteFiltro = filtroCliente.value.toLowerCase();
+    final statusFiltro = statusSelecionado.value;
+
+    return (clienteFiltro.isEmpty ||
+            chassi.cliente.toLowerCase().contains(clienteFiltro)) &&
+        (statusFiltro.isEmpty || chassi.status == statusFiltro);
+  }
+
+  void exportarCSV() async {
+    if (kIsWeb) {
+      Get.snackbar(
+        'Exportação indisponível',
+        'Esta funcionalidade não está disponível no navegador.',
+      );
+      return;
+    }
+
+    final buffer = StringBuffer();
+    buffer.writeln('Chassi,Cliente,Status,Mês,Ano');
+
+    dadosPorMes.forEach((mes, linhas) {
+      linhas.forEach((linha, lista) {
+        for (final chassi in lista) {
+          buffer.writeln(
+            '${chassi.chassi},${chassi.cliente},${chassi.status},$mes,${chassi.ano}',
+          );
+        }
+      });
+    });
+
+    final directory = await getTemporaryDirectory();
+    final file = File('${directory.path}/exportacao.csv');
+    await file.writeAsString(buffer.toString());
+    Share.shareXFiles([XFile(file.path)], text: 'Exportação de Chassis');
+  }
+
+  void refreshDados() {
+    dadosPorMes.refresh(); // isso força atualização na tela
   }
 
   List<ChassiItemModel> ordenar(List<ChassiItemModel> lista) {
@@ -160,5 +210,40 @@ class ChassiController extends GetxController {
       duration: const Duration(seconds: 3),
       margin: const EdgeInsets.all(12),
     );
+  }
+
+  Future<void> finalizarPlanejamento() async {
+    try {
+      // Aqui você faz a chamada real para o backend
+      // Exemplo:
+      final response = await http.post(
+        Uri.parse('http://localhost:3000/api/finalizar-planejamento'),
+        body: jsonEncode({
+          'ano': anoSelecionado.value,
+          'meses': mesesSelecionados,
+        }),
+        headers: {'Content-Type': 'application/json'},
+      );
+
+      if (response.statusCode == 200) {
+        Get.snackbar(
+          'Sucesso',
+          'Planejamento finalizado com sucesso!',
+          backgroundColor: Colors.green,
+          colorText: Colors.white,
+          snackPosition: SnackPosition.BOTTOM,
+        );
+      } else {
+        throw Exception('Erro: ${response.body}');
+      }
+    } catch (e) {
+      Get.snackbar(
+        'Erro',
+        'Falha ao finalizar planejamento: $e',
+        backgroundColor: Colors.red,
+        colorText: Colors.white,
+        snackPosition: SnackPosition.BOTTOM,
+      );
+    }
   }
 }

@@ -19,6 +19,8 @@ class ChassiService {
           chassi: item['CHASSI'].toString(),
           cliente: item['CLIENTE'].toString(),
           status: item['STATUS'].toString(),
+          mes: item['MES'].toString(),
+          ano: item['ANO'].toString(),
         );
       }).toList();
     } else {
