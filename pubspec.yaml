@@ -37,6 +37,7 @@ dependencies:
   dio: ^5.8.0+1
   drag_and_drop_lists: ^0.4.2
   http: ^0.13.6
+  get: ^4.7.2
 
 dev_dependencies:
   flutter_test:
